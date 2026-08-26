@@ -28,7 +28,7 @@ export function parseCompactionSummary(summary: string): ParsedCompactionSummary
 
   return {
     body: body.trim(),
-    readFiles,
-    modifiedFiles,
+    readFiles: Array.from(new Set(readFiles)),
+    modifiedFiles: Array.from(new Set(modifiedFiles)),
   };
 }
