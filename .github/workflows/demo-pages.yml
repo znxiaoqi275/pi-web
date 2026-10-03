@@ -21,6 +21,8 @@ concurrency:
 
 jobs:
   build:
+    # Forks opt in after configuring GitHub Pages; PRs still validate the demo.
+    if: github.repository == 'agegr/pi-web' || github.event_name == 'pull_request' || vars.PI_WEB_DEMO_PAGES == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:
