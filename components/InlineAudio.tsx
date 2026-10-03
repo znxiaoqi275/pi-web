@@ -54,16 +54,17 @@ export function InlineAudio({ src, children, onOpenFile }: {
         type="button"
         className="inline-audio-button"
         aria-pressed={status !== "idle"}
-        title={t(status === "idle" ? "chat.audioPlay" : "chat.audioPause")}
+        aria-busy={status === "loading"}
+        title={t(status === "loading" ? "chat.audioLoading" : status === "idle" ? "chat.audioPlay" : "chat.audioPause")}
         onClick={toggle}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <svg className={status === "loading" ? "inline-audio-spinner" : undefined} width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           {status === "playing" ? <path d="M6 4h4v16H6zm8 0h4v16h-4z" />
             : status === "loading" ? <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="8 4" />
             : <path d="M7 4v16l14-8z" />}
         </svg>
         <span>{label}</span>
-        {status === "loading" && <span className="inline-audio-status">{t("chat.audioLoading")}</span>}
+        {status === "loading" && <span className="sr-only" role="status">{t("chat.audioLoading")}</span>}
       </button>
       <audio
         ref={audioRef}
