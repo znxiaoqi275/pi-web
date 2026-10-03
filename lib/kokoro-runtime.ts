@@ -28,7 +28,7 @@ export class KokoroRuntime {
   constructor(private options: RuntimeOptions) {}
 
   async generate(request: SpeechRequest): Promise<Buffer> {
-    const key = createHash("sha256").update(JSON.stringify(["kokoro-0.6.1-fp32-v1.1", request.text, request.voice, request.speed])).digest("hex");
+    const key = createHash("sha256").update(JSON.stringify(["kokoro-0.6.1-fp32-multilingual-misaki-0.7.4", request.text, request.voice, request.speed])).digest("hex");
     const cache = join(this.options.directory, "cache");
     const output = join(cache, `${key}.wav`);
     const existing = this.pending.get(key);

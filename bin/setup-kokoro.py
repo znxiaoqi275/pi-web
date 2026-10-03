@@ -45,10 +45,11 @@ def main():
     if not python.is_file():
         subprocess.run([sys.executable, "-m", "venv", str(venv)], check=True)
     subprocess.run([str(python), "-m", "pip", "install", "--index-url", args.index_url,
-                    "kokoro-onnx==0.6.1"], check=True)
+                    "kokoro-onnx==0.6.1", "misaki[zh,ja]==0.7.4"], check=True)
     for name, checksum in ASSETS.items():
         download(directory, name, checksum)
     shutil.copyfile(Path(__file__).with_name("kokoro-worker.py"), directory / "worker.py")
+    shutil.copyfile(Path(__file__).with_name("kokoro-voices.json"), directory / "kokoro-voices.json")
     print(f"Kokoro CPU runtime installed in {directory}", flush=True)
 
 

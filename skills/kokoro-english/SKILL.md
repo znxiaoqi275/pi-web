@@ -22,4 +22,6 @@ Encode the complete English sentence as the `text` query parameter (equivalent t
 
 Available voices: `af_heart` (default US female), `af_bella` (US female), `am_michael` (US male), `bf_emma` (UK female), `bm_george` (UK male). Use the same voice for normal and slow versions. The supported speed range is 0.5–1.5; 1 and 0.8 are useful defaults.
 
+All bundled English voices are supported. Chinese translations can also have separate pronunciation links using `zf_xiaobei` or another Chinese voice. Use `kokoro-speech` for the complete multilingual voice guide; never use an English voice to read a Chinese translation.
+
 Use the learner's requested level and topic. These links work in Pi Web with the optional Kokoro runtime installed; do not claim a recording was generated or tested merely because you emitted a link. If playback fails, check the local Kokoro installation rather than silently replacing it with another provider.

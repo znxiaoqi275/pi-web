@@ -20,7 +20,7 @@ Install the optional CPU runtime once with Python 3.10–3.13:
 npm run setup:kokoro
 ```
 
-Alternatively run `python bin/setup-kokoro.py` with the desired Python executable. This creates an isolated environment in `~/.pi/agent/tts/kokoro`, installs `kokoro-onnx==0.6.1`, and downloads the full precision English model (326 MB) and voices (28 MB). Downloads are checked against SHA-256 digests. No GPU, Docker, or API key is needed. The installer uses official PyPI; `--index-url` selects another package index. Set `PI_WEB_KOKORO_DIR` for both installation and the server to choose a different data directory.
+Alternatively run `python bin/setup-kokoro.py` with the desired Python executable. This creates an isolated environment in `~/.pi/agent/tts/kokoro`, installs `kokoro-onnx==0.6.1` and `misaki[zh,ja]==0.7.4`, and downloads the full precision v1.0 model (326 MB) and all 54 voices (28 MB). Chinese and Japanese use Misaki's text-to-phoneme converters, with a bundled Japanese dictionary; other languages use bundled eSpeak. Downloads are checked against SHA-256 digests. No GPU, Docker, or API key is needed. The installer uses official PyPI; `--index-url` selects another package index. Set `PI_WEB_KOKORO_DIR` for both installation and the server to choose a different data directory. Re-run setup when upgrading from the English-only worker.
 
 Copy the bundled `skills/kokoro-english` folder into `~/.pi/agent/skills/`, then ask a new conversation to use `kokoro-english` for English practice. For example:
 
@@ -35,7 +35,9 @@ Copy the bundled `skills/kokoro-english` folder into `~/.pi/agent/skills/`, then
 
 Kokoro generates the WAV on the first click; repeated playback uses a local cache. The first uncached sentence also loads the model. The CPU worker uses two inference threads, serializes generation, accepts at most eight queued requests, and exits after 60 seconds idle to release memory. The cache keeps at most 256 recordings; evicted recordings are generated again when requested. Playback errors allow retry. Older file-based clips remain playable.
 
-Only root-relative `/api/tts` links with valid `text`, `voice`, and `speed` parameters become controls. Each request is limited to 500 characters and speed 0.5–1.5. Supported voices: `af_heart`, `af_bella`, `am_michael`, `bf_emma`, `bm_george`; the last two use British English. The endpoint generates only speech from these parameters, accepts no file path or external service URL, and uses the existing API host/origin/password checks.
+Only root-relative `/api/tts` links with valid `text`, `voice`, and `speed` parameters become controls. Each request is limited to 500 characters and speed 0.5–1.5. All 54 bundled voices are supported: English (American and British), Mandarin Chinese, Japanese, Spanish, French, Hindi, Italian, and Brazilian Portuguese. The voice selects the pronunciation language; it does not translate text. If omitted, a voice is chosen for kana, Han, or Devanagari scripts; Latin scripts default to American English, so explicitly choose a voice for other Latin languages. The endpoint generates only speech from these parameters, accepts no file path or external service URL, and uses the existing API host/origin/password checks.
+
+For multilingual speech, copy `skills/kokoro-speech` into `~/.pi/agent/skills/` and ask a new conversation to use it. Suggested voices are `zf_xiaobei` (Chinese), `jf_alpha` (Japanese), `ef_dora` (Spanish), `ff_siwis` (French), `hf_alpha` (Hindi), `if_sara` (Italian), and `pf_dora` (Brazilian Portuguese); the complete catalog is in `bin/kokoro-voices.json`. Give bilingual sentences and translations separate links with their own voices. Kokoro supports these eight languages, rather than arbitrary languages.
 
 ## Using edge-tts
 
