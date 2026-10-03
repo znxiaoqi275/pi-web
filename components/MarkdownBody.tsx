@@ -9,6 +9,7 @@ import { markdownRehypePlugins, markdownRemarkPlugins, markdownUrlTransform, mar
 import { ImagePreview } from "./ImagePreview";
 import { MermaidBlock, CodeBlock } from "./MermaidBlock";
 import { InlineAudio } from "./InlineAudio";
+import { resolveSpeechHref } from "@/lib/speech";
 
 const MarkdownLinkContext = createContext(false);
 
@@ -92,6 +93,14 @@ export function MarkdownBody({ children, className, isStreaming, cwd, onOpenFile
     a({ href, children, ...props }) {
       // `node` is react-markdown metadata, not a DOM attribute.
       delete props.node;
+      const speechSrc = resolveSpeechHref(href);
+      if (speechSrc) {
+        return (
+          <MarkdownLinkContext.Provider value={true}>
+            <InlineAudio key={speechSrc} src={speechSrc}>{children}</InlineAudio>
+          </MarkdownLinkContext.Provider>
+        );
+      }
       const filePath = onOpenFile ? resolveLocalFileHref(href, cwd) : null;
       const openFile = onOpenFile;
       if (filePath && getAudioMime(filePath)) {

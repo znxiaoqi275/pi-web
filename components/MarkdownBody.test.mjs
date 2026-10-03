@@ -71,6 +71,18 @@ test("supports audio image syntax and Windows file URLs containing spaces", () =
   assert.doesNotMatch(html, /<img/);
 });
 
+test("renders local Kokoro speech links as lazy inline controls even without a file handler", () => {
+  const html = renderMarkdown("**Hello, world!**\n\n[正常朗读](/api/tts?text=Hello%2C%20world%21&voice=af_heart&speed=1) [慢速跟读](/api/tts?text=Hello%2C%20world%21&voice=af_heart&speed=0.8)", { onOpenFile: undefined });
+  assert.equal((html.match(/<audio /g) || []).length, 2);
+  assert.match(html, /<strong>Hello, world!<\/strong>/);
+  assert.match(html, /src="\/api\/tts\?text=Hello%2C\+world%21&amp;voice=af_heart&amp;speed=0.8"/);
+  assert.match(html, /preload="none"/);
+  assert.doesNotMatch(html, /<a |autoplay/);
+  for (const link of ["https://example.com/api/tts?text=Hello", "/api/tts?text=Hello&voice=invalid"]) {
+    assert.doesNotMatch(renderMarkdown(`[Listen](${link})`), /<audio /);
+  }
+});
+
 test("leaves remote audio and escaping relative paths as ordinary links", () => {
   for (const markdown of ["[recording](https://example.com/song.mp3)", "[outside](../outside.mp3)"]) {
     const html = renderMarkdown(markdown);
