@@ -53,6 +53,41 @@ test("keeps file URLs inert without an in-app file handler", () => {
   assert.match(html, /<a href="" target="_blank" rel="noopener noreferrer">report<\/a>/);
 });
 
+test("renders sentence audio links as inline controls with session-scoped file access", () => {
+  const html = renderMarkdown("**I am learning English.**\n\n我正在学习英语。\n\n[正常朗读](audio/normal.mp3) [慢速跟读](audio/slow.MP3)", { sourceSessionId: "audio-session" });
+  assert.match(html, /<strong>I am learning English\.<\/strong>/);
+  assert.match(html, /我正在学习英语。/);
+  assert.equal((html.match(/<audio /g) || []).length, 2);
+  assert.match(html, /<button[^>]*>[^]*正常朗读[^]*<\/button>/);
+  assert.match(html, /src="\/api\/files\/home\/me\/project\/audio\/normal\.mp3\?type=read&amp;sessionId=audio-session"/);
+  assert.match(html, /preload="none"/);
+  assert.doesNotMatch(html, /<a |autoplay|<img/);
+});
+
+test("supports audio image syntax and Windows file URLs containing spaces", () => {
+  const html = renderMarkdown("![慢速跟读](<file:///C:/English%20practice/slow.mp3>)", { cwd: "C:/English practice", sourceSessionId: "s" });
+  assert.match(html, /<audio[^>]*src="\/api\/files\/C%3A\/English%20practice\/slow\.mp3\?type=read&amp;sessionId=s"/);
+  assert.match(html, /慢速跟读/);
+  assert.doesNotMatch(html, /<img/);
+});
+
+test("leaves remote audio and escaping relative paths as ordinary links", () => {
+  for (const markdown of ["[recording](https://example.com/song.mp3)", "[outside](../outside.mp3)"]) {
+    const html = renderMarkdown(markdown);
+    assert.match(html, /<a /);
+    assert.doesNotMatch(html, /<audio|inline-audio/);
+  }
+  assert.doesNotMatch(renderMarkdown("[unsafe](javascript:alert.mp3)"), /<audio|javascript:/);
+});
+
+test("audio link labels containing images do not nest interactive buttons", () => {
+  const html = renderMarkdown("[![Listen](cover.png)](audio/normal.mp3)");
+  assert.equal((html.match(/<button /g) || []).length, 1);
+  assert.match(html, /<audio /);
+  assert.match(html, /<img /);
+  assert.doesNotMatch(html, /<button[^>]*>[^]*<button/);
+});
+
 test("keeps single-tilde CJK numeric ranges literal instead of striking them", () => {
   const html = renderMarkdown("5~7U 保证金 × 100~200倍杠杆");
 

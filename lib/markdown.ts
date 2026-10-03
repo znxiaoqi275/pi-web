@@ -18,6 +18,7 @@ const markdownSanitizeSchema = {
   protocols: {
     ...defaultSchema.protocols,
     href: [...(defaultSchema.protocols?.href ?? []), "file"],
+    src: [...(defaultSchema.protocols?.src ?? []), "file"],
   },
   strip: [...(defaultSchema.strip || []), "iframe", "object", "style", "form"],
 };

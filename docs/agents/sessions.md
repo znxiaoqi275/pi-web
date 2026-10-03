@@ -1,5 +1,10 @@
 # Sessions, branching and live events
 
+## Inline pronunciation audio
+- `MarkdownBody` renders local audio links (`[正常朗读](audio/normal.mp3)`) and unlinked audio image syntax (`![慢速跟读](audio/slow.mp3)`) as `InlineAudio` buttons. Labels are ordinary Markdown content; keep the sentence and translation above them. Remote URLs remain ordinary links, and audio markup inside a link does not create nested controls.
+- Assistant text passes its `sessionId` as `sourceSessionId` so audio outside the cwd uses the existing exact session-file-reference read policy. All media goes through `/api/files`; do not bypass its root/link checks or add audio roots. `preload="none"` avoids fetching the whole transcript's clips; playback starts from the button gesture. Switching clips pauses the previous inline clip, and unmounting pauses playback.
+- TTS skills should write durable, uniquely named files beneath the learning session's cwd, emit relative Markdown links for each sentence's normal/slow recordings, and confirm generation succeeded before emitting them. Plain paths or shell commands do not create playback controls.
+
 ## AgentSession lifecycle (`lib/rpc-manager.ts`)
 - One `AgentSessionWrapper` per session id in `globalThis.__piSessions` (`globalThis` survives Next.js hot reload; a module-level Map does not). Concurrent `startRpcSession()` calls share one start Promise (`globalThis.__piStartLocks`). Idle timeout: 10 minutes (`PI_WEB_IDLE_TIMEOUT_MS`, `0` disables).
 - Stop cannot cancel a run awaiting a promise that ignores the abort signal (a third-party extension handler or tool): `inner.abort()` never returns. So Stop (`abort`, `abort_bash`) sets `forceShutdownOnIdle` and arms the idle timer, shutting the wrapper down one idle timeout after the first Stop even while it runs. Later commands (a reload's `get_tools`, Stop again) must not push that deadline back; with `PI_WEB_IDLE_TIMEOUT_MS=0` it still arms, at 10 minutes.

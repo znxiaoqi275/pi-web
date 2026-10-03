@@ -5,6 +5,12 @@ export const zhCNLocale: LocalePlugin = {
   id: "zh-CN",
   label: "简体中文",
   messages: {
+    "chat.audioListen": "听发音",
+    "chat.audioPlay": "播放音频",
+    "chat.audioPause": "暂停音频",
+    "chat.audioLoading": "加载中…",
+    "chat.audioError": "音频暂时无法播放，点击可重试。",
+    "chat.audioOpenFile": "打开音频文件",
     "common.ok": "确定",
     "common.language": "语言",
     "common.models": "模型",

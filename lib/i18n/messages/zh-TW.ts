@@ -5,6 +5,12 @@ export const zhTWLocale: LocalePlugin = {
   id: "zh-TW",
   label: "繁體中文",
   messages: {
+    "chat.audioListen": "聽發音",
+    "chat.audioPlay": "播放音訊",
+    "chat.audioPause": "暫停音訊",
+    "chat.audioLoading": "載入中…",
+    "chat.audioError": "音訊暫時無法播放，點擊可重試。",
+    "chat.audioOpenFile": "開啟音訊檔案",
     "common.ok": "確定",
     "common.language": "語言",
     "common.models": "模型",

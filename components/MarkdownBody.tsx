@@ -4,9 +4,11 @@ import { createContext, useContext, useMemo, type ComponentProps, type MouseEven
 import ReactMarkdown, { type Components, type ExtraProps } from "react-markdown";
 import { parsePdfPageFragment, resolveLocalFileHref, shouldOpenLocalFileInApp } from "@/lib/file-links";
 import { encodeFilePathForApi } from "@/lib/file-paths";
+import { getAudioMime } from "@/lib/file-types";
 import { markdownRehypePlugins, markdownRemarkPlugins, markdownUrlTransform, markdownUserRemarkPlugins, normalizeDisplayMath } from "@/lib/markdown";
 import { ImagePreview } from "./ImagePreview";
 import { MermaidBlock, CodeBlock } from "./MermaidBlock";
+import { InlineAudio } from "./InlineAudio";
 
 const MarkdownLinkContext = createContext(false);
 
@@ -16,6 +18,7 @@ interface MarkdownBodyProps {
   isStreaming?: boolean;
   cwd?: string;
   onOpenFile?: (filePath: string, page?: number) => void;
+  sourceSessionId?: string;
   /** Render every line ending as a line break, for text the user typed. */
   keepLineBreaks?: boolean;
 }
@@ -24,12 +27,18 @@ function MarkdownImage({
   src,
   alt,
   cwd,
+  sourceSessionId,
+  onOpenFile,
   ...props
-}: ComponentProps<"img"> & ExtraProps & { cwd?: string }) {
+}: ComponentProps<"img"> & ExtraProps & Pick<MarkdownBodyProps, "cwd" | "sourceSessionId" | "onOpenFile">) {
   const insideLink = useContext(MarkdownLinkContext);
   delete props.node;
   const href = typeof src === "string" ? src : undefined;
   const filePath = href ? resolveLocalFileHref(href, cwd) : null;
+  if (!insideLink && filePath && getAudioMime(filePath)) {
+    const src = audioFileUrl(filePath, sourceSessionId);
+    return <InlineAudio key={src} src={src} onOpenFile={onOpenFile ? () => onOpenFile(filePath) : undefined}>{alt}</InlineAudio>;
+  }
   const imageSrc = filePath
     ? `/api/files/${encodeFilePathForApi(filePath)}?type=read`
     : href;
@@ -44,7 +53,11 @@ function MarkdownImage({
   );
 }
 
-export function MarkdownBody({ children, className, isStreaming, cwd, onOpenFile, keepLineBreaks }: MarkdownBodyProps) {
+function audioFileUrl(filePath: string, sessionId?: string) {
+  return `/api/files/${encodeFilePathForApi(filePath)}?type=read${sessionId ? `&sessionId=${encodeURIComponent(sessionId)}` : ""}`;
+}
+
+export function MarkdownBody({ children, className, isStreaming, cwd, onOpenFile, sourceSessionId, keepLineBreaks }: MarkdownBodyProps) {
   const normalizedMarkdown = useMemo(() => normalizeDisplayMath(children), [children]);
   // Stable renderer identities keep stateful blocks mounted across message hover updates.
   const components = useMemo<Components>(() => ({
@@ -81,6 +94,14 @@ export function MarkdownBody({ children, className, isStreaming, cwd, onOpenFile
       delete props.node;
       const filePath = onOpenFile ? resolveLocalFileHref(href, cwd) : null;
       const openFile = onOpenFile;
+      if (filePath && getAudioMime(filePath)) {
+        const src = audioFileUrl(filePath, sourceSessionId);
+        return (
+          <MarkdownLinkContext.Provider value={true}>
+            <InlineAudio key={src} src={src} onOpenFile={openFile ? () => openFile(filePath) : undefined}>{children}</InlineAudio>
+          </MarkdownLinkContext.Provider>
+        );
+      }
       if (!filePath || !openFile) {
         return (
           <MarkdownLinkContext.Provider value={true}>
@@ -108,7 +129,7 @@ export function MarkdownBody({ children, className, isStreaming, cwd, onOpenFile
       );
     },
     img(props) {
-      return <MarkdownImage cwd={cwd} {...props} />;
+      return <MarkdownImage cwd={cwd} sourceSessionId={sourceSessionId} onOpenFile={onOpenFile} {...props} />;
     },
     table({ children }) {
       return (
@@ -117,7 +138,7 @@ export function MarkdownBody({ children, className, isStreaming, cwd, onOpenFile
         </div>
       );
     },
-  }), [cwd, isStreaming, onOpenFile]);
+  }), [cwd, isStreaming, onOpenFile, sourceSessionId]);
 
   return (
     <div className={["markdown-body", className].filter(Boolean).join(" ")}>

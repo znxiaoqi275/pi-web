@@ -5,6 +5,12 @@ export const enLocale: LocalePlugin = {
   id: "en",
   label: "English",
   messages: {
+    "chat.audioListen": "Listen",
+    "chat.audioPlay": "Play audio",
+    "chat.audioPause": "Pause audio",
+    "chat.audioLoading": "Loading…",
+    "chat.audioError": "Audio unavailable. Tap to retry.",
+    "chat.audioOpenFile": "Open audio file",
     "common.ok": "OK",
     "common.language": "Language",
     "common.models": "Models",
